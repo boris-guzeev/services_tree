@@ -114,45 +114,7 @@ class ServiceRepository extends ServiceEntityRepository
         $output = connectChild('', $services);
         return json_encode($output);
     }
-
-    // /**
-    //  * @return Service[] Returns an array of Service objects
-    //  */
-    public function findByKodField($value)
-    {
-        $queryBuilder = $this->createQueryBuilder('s');
-        $allServices = $queryBuilder
-            ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
-            ->add('from', Service::class . ' s')
-            ->getQuery()
-            ->getResult()
-        ;
-
-        $findedServices = $this->createQueryBuilder('s')
-            ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
-            ->add('from', Service::class . ' s')
-            ->andWhere('s.Kod LIKE :val')
-            ->setParameter('val', '%' . $value . '%')
-            ->orderBy('s.Idx', 'ASC')
-            //->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-
-        foreach ($findedServices as $key => &$findedService) {
-            $Idx = str_replace('.', '\.', $findedService['Idx']);
-
-            $pattern = '/^' . $Idx . '\.[0-9]+$/';
-            foreach ($allServices as $service) {
-                if (preg_match($pattern, $service['Idx'])) {
-                    $findedService['children'] = [$service];
-                }
-            }
-        }
-        return json_encode($findedServices);
-    }
-
-
+    
     public function findByField($field, $value)
     {
         $allServices = $this->createQueryBuilder('s')
