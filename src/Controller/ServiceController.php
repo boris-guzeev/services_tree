@@ -74,9 +74,16 @@ class ServiceController extends AbstractController
         // если введены только цифры и точки, то ищем по Коду
         $pattern = '/^[0-9.]+$/';
         if (preg_match($pattern, $slug)) {
-            $services = $this->getDoctrine()
+            $finded = $this->getDoctrine()
                 ->getRepository(Service::class)
                 ->findByKodField($slug);
+
+
+            return new Response(
+                $finded,
+                200,
+                ['Content-Type' => 'application/json']
+            );
 
         } else {
             // TO DO

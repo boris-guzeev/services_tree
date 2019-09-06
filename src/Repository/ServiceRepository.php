@@ -6,6 +6,7 @@ use App\Entity\Service;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\ORMException;
 
 /**
@@ -119,16 +120,37 @@ class ServiceRepository extends ServiceEntityRepository
     //  */
     public function findByKodField($value)
     {
-        $services = $this->createQueryBuilder('s')
-            ->select("s.id, s.Name AS text, s.Idx")
+        $queryBuilder = $this->createQueryBuilder('s');
+
+        $allServices = $queryBuilder
+            ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
+            ->add('from', Service::class . ' s')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        $findedServices = $this->createQueryBuilder('s')
+            ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
             ->add('from', Service::class . ' s')
             ->andWhere('s.Kod LIKE :val')
             ->setParameter('val', '%' . $value . '%')
-            ->orderBy('s.Kod', 'ASC')
+            ->orderBy('s.Idx', 'ASC')
             //->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
+
+        foreach ($findedServices as $key => &$findedService) {
+            $Idx = str_replace('.', '\.', $findedService['Idx']);
+
+            $pattern = '/^' . $Idx . '\.[0-9]+$/';
+            foreach ($allServices as $service) {
+                if (preg_match($pattern, $service['Idx'])) {
+                    $findedService['children'] = [$service];
+                }
+            }
+        }
+        return json_encode($findedServices);
     }
 
     /*
