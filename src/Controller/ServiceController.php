@@ -76,22 +76,17 @@ class ServiceController extends AbstractController
         if (preg_match($pattern, $slug)) {
             $finded = $this->getDoctrine()
                 ->getRepository(Service::class)
-                ->findByKodField($slug);
-
-
-            return new Response(
-                $finded,
-                200,
-                ['Content-Type' => 'application/json']
-            );
+                ->findByField('Kod', $slug);
 
         } else {
-            // TO DO
+            $finded = $this->getDoctrine()
+                ->getRepository(Service::class)
+                ->findByField('Name', $slug);
         }
-exit;
-
-        /*return new Response(
-            $output
-        );*/
+        return new Response(
+            $finded,
+            200,
+            ['Content-Type' => 'application/json']
+        );
     }
 }

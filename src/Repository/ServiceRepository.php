@@ -121,7 +121,6 @@ class ServiceRepository extends ServiceEntityRepository
     public function findByKodField($value)
     {
         $queryBuilder = $this->createQueryBuilder('s');
-
         $allServices = $queryBuilder
             ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
             ->add('from', Service::class . ' s')
@@ -153,15 +152,35 @@ class ServiceRepository extends ServiceEntityRepository
         return json_encode($findedServices);
     }
 
-    /*
-    public function findOneBySomeField($value): ?Service
+
+    public function findByField($field, $value)
     {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
+        $allServices = $this->createQueryBuilder('s')
+            ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
+            ->add('from', Service::class . ' s')
             ->getQuery()
-            ->getOneOrNullResult()
+            ->getResult()
         ;
+
+        $findedServices = $this->createQueryBuilder('s')
+            ->select("s.id, CONCAT(s.Name, ' ', s.Kod) AS text, s.Idx")
+            ->andWhere("s.$field LIKE :val")
+            ->setParameter('val', '%' . $value . '%')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        foreach ($findedServices as $key => &$findedService) {
+            $Idx = str_replace('.', '\.', $findedService['Idx']);
+
+            $pattern = '/^' . $Idx . '\.[0-9]+$/';
+            foreach ($allServices as $service) {
+                if (preg_match($pattern, $service['Idx'])) {
+                    $findedService['children'] = [$service];
+                }
+            }
+        }
+        return json_encode($findedServices);
     }
-    */
+
 }
