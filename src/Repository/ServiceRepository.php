@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Service;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\ORMException;
@@ -23,8 +24,8 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
 
-    private static function log($text) {
-        $text = date('d m Y h:i:s') . ' | ' . $text  . "\n";
+    private static function log($text, $merge = '') {
+        $text = date('d m Y h:i:s') . ' | ' . $text  . "\n" . $merge;
         file_put_contents('log.txt', $text, FILE_APPEND);
     }
 
@@ -34,7 +35,7 @@ class ServiceRepository extends ServiceEntityRepository
      * @param EntityManager $em
      * @throws \Doctrine\Common\Persistence\Mapping\MappingException
      */
-    public static function loadServices(EntityManager $em)
+    public function loadServices(EntityManager $em)
     {
         self::log('Начало загрузки');
         if ($_FILES['file']['name'] && $_FILES['file']['error'] == 0) {
@@ -45,35 +46,54 @@ class ServiceRepository extends ServiceEntityRepository
             $conn->executeUpdate($p->getTruncateTableSQL('service', true));
 
             $length = sizeof($xml);
-            self::log('Количество строк: ' . $length);
-            $batchSize = 20;
-            for ($i = 0; $i < $length; $i++) {
-                $service = new Service;
-                $service
-                    ->setGlobalId($xml->array[$i]->global_id->__toString())
-                    ->setName($xml->array[$i]->Name->__toString())
-                    ->setRazdel($xml->array[$i]->Razdel->__toString())
-                    ->setIdx($xml->array[$i]->Idx->__toString())
-                    ->setKod($xml->array[$i]->Kod->__toString())
-                    ->setNomdescr($xml->array[$i]->Nomdescr->__toString());
-
-                $em->persist($service);
-
-                if (($i % $batchSize) === 0) {
-                    $em->flush();
-                    $em->clear();
-                }
-            }
+            self::log('Количество строк в xml: ' . $length);
+            $batchSize = 50;
+            $em->getConnection()->beginTransaction();
+            $em->getConnection()->setAutoCommit(false);
 
             try {
+                for ($i = 0; $i < $length; $i++) {
+                    $service = new Service;
+                    $service
+                        ->setGlobalId($xml->array[$i]->global_id->__toString())
+                        ->setName($xml->array[$i]->Name->__toString())
+                        ->setRazdel($xml->array[$i]->Razdel->__toString())
+                        ->setIdx($xml->array[$i]->Idx->__toString())
+                        ->setKod($xml->array[$i]->Kod->__toString())
+                        ->setNomdescr($xml->array[$i]->Nomdescr->__toString());
+
+                    $em->persist($service);
+
+                    if (($i % $batchSize) === 0) {
+                        $em->flush();
+                        $em->clear();
+                        $em->getConnection()->commit();
+                    }
+                }
+
                 $em->persist($service);
                 $em->flush();
                 $em->clear();
+                $em->getConnection()->commit();
             } catch (ORMException $e) {
-                echo $e->getMessage();
+                self::log($e->getMessage());
+            } catch (ConnectionException $e) {
+                $em->getConnection()->rollBack();
+                self::log($e->getMessage());
             }
+
         }
-        self::log('Конец загрузки');
+
+        $table = Service::class;
+        $dql = "SELECT COUNT(s.id) AS balance FROM $table s";
+        $numRows = $em->createQuery($dql)
+            ->getSingleScalarResult();
+
+
+        self::log('Количество строк, занесенных в БД: ' . $numRows);
+        self::log('Конец загрузки', "\n");
+
+        return true;
     }
 
     public function tree()

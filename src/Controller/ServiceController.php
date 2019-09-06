@@ -39,12 +39,19 @@ class ServiceController extends AbstractController
     public function upload()
     {
         $entityManager = $this->getDoctrine()->getManager();
+        $loadingResult = $this-> getDoctrine()->getRepository(Service::class)
+            ->loadServices($entityManager);
 
-        ServiceRepository::loadServices($entityManager);
-
-        return new Response(
-            'ok'
-        );
+        if ($loadingResult)
+            return new Response(
+                'ok'
+            );
+        else {
+            return new Response(
+                'ошибка сохранения',
+                500
+            );
+        }
     }
 
     /**
