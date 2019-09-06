@@ -39,8 +39,9 @@
         <div class="col-sm-6">
                 <h4>Поиск</h4>
                 <p>
-                    <button id="search" style="width: 19%">Искать</button>
-                    <input type="text" name="term" id="term" placeholder="Введите ID или Название" style="width: 80%">
+                    <button id="search" style="width: 15%">Искать</button>
+                    <input type="text" name="term" id="term" placeholder="Введите ID или Название" style="width: 71%">
+                    <button id="reset" style="width: 12%">Сброс.</button>
                 </p>
 
         </div>
@@ -106,6 +107,11 @@ $(function () {
                 $('#submit').html('Обработка данных...').prop('disabled', 'disabled');
             }
         }
+    });
+
+    $('#reset').click(function () {
+        $('#term').val('');
+        tree.jstree('refresh');
     });
 })
 </script>

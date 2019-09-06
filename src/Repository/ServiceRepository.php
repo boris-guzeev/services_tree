@@ -114,7 +114,7 @@ class ServiceRepository extends ServiceEntityRepository
         $output = connectChild('', $services);
         return json_encode($output);
     }
-    
+
     public function findByField($field, $value)
     {
         $allServices = $this->createQueryBuilder('s')
