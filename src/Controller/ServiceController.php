@@ -55,9 +55,8 @@ class ServiceController extends AbstractController
     }
 
     /**
-     *
      * @Route("/list")
-     * @var QueryBuilder $queryBuilder
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function list()
     {
@@ -65,15 +64,12 @@ class ServiceController extends AbstractController
             ->getRepository(Service::class)
             ->tree();
 
-        return new Response(
-            $tree,
-            200,
-            ['Content-Type' => 'application/json']
-        );
+        return $this->json($tree);
     }
 
     /**
      * @Route("/search/{slug}")
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function search($slug)
     {
@@ -90,10 +86,7 @@ class ServiceController extends AbstractController
                 ->getRepository(Service::class)
                 ->findByField('Name', $slug);
         }
-        return new Response(
-            $finded,
-            200,
-            ['Content-Type' => 'application/json']
-        );
+
+        return $this->json($finded);
     }
 }

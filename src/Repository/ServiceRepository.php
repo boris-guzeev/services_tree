@@ -23,7 +23,6 @@ class ServiceRepository extends ServiceEntityRepository
         parent::__construct($registry, Service::class);
     }
 
-
     private static function log($text, $merge = '') {
         $text = date('d m Y h:i:s') . ' | ' . $text  . "\n" . $merge;
         file_put_contents('log.txt', $text, FILE_APPEND);
@@ -131,8 +130,7 @@ class ServiceRepository extends ServiceEntityRepository
             return $outputTree = array_values($outputTree);
         }
 
-        $output = connectChild('', $services);
-        return json_encode($output);
+        return connectChild('', $services);
     }
 
     public function findByField($field, $value)
@@ -162,7 +160,8 @@ class ServiceRepository extends ServiceEntityRepository
                 }
             }
         }
-        return json_encode($findedServices);
+
+        return $findedServices;
     }
 
 }
