@@ -24,8 +24,6 @@ class ServiceController extends AbstractController
             ->getRepository(Service::class)
             ->findAll();
 
-        $services = print_r($services, true);
-
         return $this->render('base.html.twig',[
             'output' => $services
         ]);
@@ -100,12 +98,7 @@ class ServiceController extends AbstractController
             }
         }
 
-        $table = Service::class;
-        $dql = "SELECT COUNT(s.id) AS balance FROM $table s";
-        $numRows = $entityManager->createQuery($dql)
-            ->getSingleScalarResult();
-
-        self::log('Общее количество строк в БД: ' . $numRows . ' количество новых: ' . $newRows);
+        self::log('Количество добавленных строк: ' . $newRows);
         self::log('Конец загрузки', "\n");
 
         return new Response(
