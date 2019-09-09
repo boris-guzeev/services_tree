@@ -99,6 +99,7 @@ $(function () {
                     success: function (data) {
                         $('#submit').html('Услуги успешно загружены!');
                         tree.jstree('refresh');
+                        $('#submit').removeAttr('disabled').html('Загрузить');
                     },
                     error: function (xhr) {
                         $('.js-fileName').html(xhr.responseText);

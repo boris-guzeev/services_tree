@@ -9,21 +9,12 @@
 namespace App\Controller;
 
 use App\Entity\Service;
-use App\Repository\ServiceRepository;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 class ServiceController extends AbstractController
 {
-
-    private function log($text, $merge = '') {
-        $text = date('d m Y h:i:s') . ' | ' . $text  . "\n" . $merge;
-        file_put_contents('log.txt', $text, FILE_APPEND);
-    }
-
     /**
      * @Route("/")
      */
@@ -113,7 +104,6 @@ class ServiceController extends AbstractController
         $dql = "SELECT COUNT(s.id) AS balance FROM $table s";
         $numRows = $entityManager->createQuery($dql)
             ->getSingleScalarResult();
-
 
         self::log('Общее количество строк в БД: ' . $numRows . ' количество новых: ' . $newRows);
         self::log('Конец загрузки', "\n");
@@ -222,5 +212,10 @@ class ServiceController extends AbstractController
         }
 
         return $findedServices;
+    }
+
+    private function log($text, $merge = '') {
+        $text = date('d m Y h:i:s') . ' | ' . $text  . "\n" . $merge;
+        file_put_contents('log.txt', $text, FILE_APPEND);
     }
 }
